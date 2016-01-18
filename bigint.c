@@ -75,13 +75,15 @@ bigint* bi_fromstring(const char *str) {
 }
 
 void bi_delete(bigint* a) {
-  free(a->x);
-  free(a);
+  if (a) {
+    free(a->x);
+    free(a);
+  }
 }
 
 bigint* bi_add(const bigint *a, const bigint *b) {
   // One operand is NULL
-  if (!(a || b))
+  if (!(a && b))
     return NULL;
   
   // One operand is bigint zero
@@ -128,14 +130,14 @@ bigint* bi_add(const bigint *a, const bigint *b) {
   long sum = 0;
   int i = 0;
   for (; i < axlen; i++) {
-    sum += ax[i] + bx[i];
-    x[i] = (int)sum % BASE;
+    sum += (long)ax[i] + (long)bx[i];
+    x[i] = (int)(sum % BASE);
     sum /= BASE;
   }
   
   for (; i < bxlen; i++) {
-    sum += bx[i];
-    x[i] = (int)sum % BASE;
+    sum += (long)bx[i];
+    x[i] = (int)(sum % BASE);
     sum /= BASE;
   }
   x[i] = (int)sum;
@@ -166,7 +168,7 @@ bigint* bi_add(const bigint *a, const bigint *b) {
 
 bigint* bi_sub(const bigint *a, const bigint *b) {
   // One operand is NULL
-  if (!(a || b))
+  if (!(a && b))
     return NULL;
   
   bigint* retval;
@@ -374,7 +376,7 @@ bigint* bi_factorial(const bigint *a) {
   bigint* retval = bi_copy(one);
   bigint* prev = bi_copy(a);
   
-  if (!retval || !one || !prev)
+  if (!retval)
     return NULL;
 
   // TODO: is it better if we use mutable bigint here?
@@ -542,8 +544,10 @@ bigint* bi_negate(const bigint* a) {
   }
   
   int *x = malloc(a->xlen * sizeof(int));
-  if (!x)
+  if (!x) {
+    free(retval);
     return NULL;
+  }
   
   memcpy(x, a->x, a->xlen * sizeof(int));
   retval->x = x;

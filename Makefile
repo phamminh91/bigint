@@ -1,5 +1,5 @@
 CC=clang
-CFLAGS=-std=c11 -Wall -O2
+CFLAGS=-std=c11 -Wall
 
 all: bigint.o
 	$(CC) $(CFLAGS) bigint.o test.c -o test

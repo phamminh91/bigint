@@ -5,6 +5,7 @@
 
 void test_bi_leading_zero();
 void test_bi_representation();
+void test_bi_delete();
 void test_bi_cmp();
 void test_bi_add();
 void test_bi_sub();
@@ -23,6 +24,7 @@ int main() {
   test_bi_mult();
   test_bi_div();
   test_bi_factorial();
+  test_bi_delete();
   
   test_bi_julia();
   test_bi_julia_integrated();
@@ -37,6 +39,13 @@ void bi_assert(bigint* expected, bigint* actual) {
     bi_print(expected);
     assert(false);
   }
+}
+
+void test_bi_delete() {
+  bigint* a = NULL;
+  bi_delete(a);
+  
+  puts("test_bi_delete: OK");
 }
 
 void test_bi_representation() {
@@ -794,6 +803,8 @@ void test_bi_julia() {
   bi_delete(d);
   bi_delete(one);
   bi_delete(two);
+  
+  puts("test_bi_julia: OK");
 }
 
 void test_bi_julia_integrated() {
@@ -920,4 +931,6 @@ void test_bi_julia_integrated() {
   bi_delete(z3);
   bi_delete(z4);
   bi_delete(expected);
+  
+  puts("test_bi_julia_integrated: OK");
 }
