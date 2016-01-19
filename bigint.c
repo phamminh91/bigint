@@ -4,23 +4,23 @@ static inline int bi_opposite_sign(const bigint* a, const bigint * b);
 
 bigint* bi_fromstring(const char *str) {
   // verify string format
-  
+
   // allocate the bigint struct
   bigint* retval = malloc(sizeof(bigint));
   if (!retval)
     return NULL;
-  
+
   // determine sign
   if (*str == '-') {
     retval->positive = false;
     ++str;
   } else
     retval->positive = true;
-  
+
   // skip zero
   while (*str == '0')
     str++;
-  
+
   // Bigint ZERO
   if (*str == '\0') {
     retval->xlen = 0;
@@ -29,18 +29,18 @@ bigint* bi_fromstring(const char *str) {
     retval->positive = true;
     return retval;
   }
-  
+
   // calculate size of x
   int digits = (int)strlen(str);
   int xlen = (digits + 8) / 9;
-  
+
   // allocate memory for x
   int *x = malloc(digits * sizeof(int));
   if (!x) {
     free(retval);
     return NULL;
   }
-  
+
   // initialize content of x
   int i = digits-1;
   int at = 1;
@@ -56,7 +56,7 @@ bigint* bi_fromstring(const char *str) {
                  + (str[i-1] - '0') * 10
                  + (str[i] - '0');
   }
-  
+
   if (at > 0) {
     int power = 1;
     int accum = 0;
@@ -66,11 +66,11 @@ bigint* bi_fromstring(const char *str) {
     }
     x[xlen-1] = accum;
   }
-  
+
   retval->xlen = xlen;
   retval->x = x;
   retval->digits = digits;
-  
+
   return retval;
 }
 
@@ -85,18 +85,18 @@ bigint* bi_add(const bigint *a, const bigint *b) {
   // One operand is NULL
   if (!(a && b))
     return NULL;
-  
+
   // One operand is bigint zero
   if (bi_is_zero(a))
     return bi_copy(b);
   if (bi_is_zero(b))
     return bi_copy(a);
-  
+
   // Allocate memory for bigint
   bigint* retval = malloc(sizeof(bigint));
   if (!retval)
     return NULL;
-  
+
   // subtract or add?
   if (bi_opposite_sign(a, b)) {
     retval->digits = b->digits;
@@ -107,26 +107,26 @@ bigint* bi_add(const bigint *a, const bigint *b) {
     free(retval);
     return res;
   }
-  
+
   // From here on, a and b will have the same sign
   if (a->digits > b->digits) {
     const bigint* tmp = a;
     a = b;
     b = tmp;
   }
-  
+
   int* ax = a->x;
   int* bx = b->x;
   int axlen = a->xlen;
   int bxlen = b->xlen;
   int xlen = bxlen;
-  
+
   int *x = malloc((bxlen + 1) * sizeof(int));
   if (!x) {
     free(retval);
     return NULL;
   }
-  
+
   long sum = 0;
   int i = 0;
   for (; i < axlen; i++) {
@@ -134,17 +134,17 @@ bigint* bi_add(const bigint *a, const bigint *b) {
     x[i] = (int)(sum % BASE);
     sum /= BASE;
   }
-  
+
   for (; i < bxlen; i++) {
     sum += (long)bx[i];
     x[i] = (int)(sum % BASE);
     sum /= BASE;
   }
   x[i] = (int)sum;
-  
+
   if (sum > 0)
     xlen++;
-  
+
   // calculate number of digits
   int ndigits;
   if (xlen == 1) {
@@ -162,7 +162,7 @@ bigint* bi_add(const bigint *a, const bigint *b) {
   retval->x = x;
   retval->digits = ndigits;
   retval->positive = a->positive;
-  
+
   return retval;
 }
 
@@ -170,9 +170,9 @@ bigint* bi_sub(const bigint *a, const bigint *b) {
   // One operand is NULL
   if (!(a && b))
     return NULL;
-  
+
   bigint* retval;
-  
+
   // One operand is bigint zero
   if (bi_is_zero(a)) {
     retval = bi_copy(b);
@@ -181,12 +181,12 @@ bigint* bi_sub(const bigint *a, const bigint *b) {
   }
   if (bi_is_zero(b))
     return bi_copy(a);
-  
+
   // Cannot allocate memory for bigint
   retval = malloc(sizeof(bigint));
   if (!retval)
     return NULL;
-  
+
   // if opposite sign then calculate using addition
   if (bi_opposite_sign(a, b)) {
     retval->digits = b->digits;
@@ -197,33 +197,33 @@ bigint* bi_sub(const bigint *a, const bigint *b) {
     free(retval);
     return res;
   }
-  
+
   bool swapped = false;
   if (!a->positive) {
     const bigint* tmp = a;
     a = b;
     b = tmp;
   }
-  
+
   if (bi_cmp(a, b) < 0) {
     const bigint* tmp = a;
     a = b;
     b = tmp;
     swapped = true;
   }
-  
+
   int axlen = a->xlen;
   int bxlen = b->xlen;
   int* ax = a->x;
   int* bx = b->x;
   int xlen = axlen > bxlen ? axlen : bxlen;
-  
+
   int* x = malloc(xlen * sizeof(int));
   if (!x) {
     free(retval);
     return NULL;
   }
-  
+
   int ia = 0;
   int ib = 0;
   int diff = 0;
@@ -244,7 +244,7 @@ bigint* bi_sub(const bigint *a, const bigint *b) {
         diff -= bx[ib];
         ++ib;
       }
-      
+
       if (diff < 0) {
         x[ia - 1] = diff + BASE;
         diff = -1;
@@ -263,7 +263,7 @@ bigint* bi_sub(const bigint *a, const bigint *b) {
     retval->x = NULL;
   } else
     retval->x = x;
-  
+
   // TODO: if x is over allocated, resize it
   if (x[firstoctet] < 0)
     x[0] = -x[0];
@@ -276,10 +276,10 @@ bigint* bi_sub(const bigint *a, const bigint *b) {
   int ndigits = 9 * firstoctet;
   for (int t = x[firstoctet]; t >= 1; t /= 10)
     ++ndigits;
-  
+
   retval->xlen = firstoctet + 1;
   retval->digits = ndigits;
-  
+
   return retval;
 }
 
@@ -287,57 +287,55 @@ bigint* bi_mult(const bigint *a, const bigint *b) {
   // One operand is NULL
   if (!(a && b))
     return NULL;
-  
-  
+
+
   // One operand is bigint zero
   if (bi_is_zero(a) || bi_is_zero(b))
     return bi_zero();
-  
+
   bigint* retval;
-  
+  int* xa = a->x;
+  int* xb = b->x;
+  int alen = a->xlen;
+  int blen = b->xlen;
+
   // One operand is bigint one or minus one
-  if (a->x[0] == 1) {
+  if (a->x[0] == 1 && a->xlen == 1) {
     retval = bi_copy(b);
     retval->positive = !(a->positive ^ b->positive);
     return retval;
   }
-  
-  if (b->x[0] == 1) {
+
+  if (b->x[0] == 1 && b->xlen == 1) {
     retval = bi_copy(a);
     retval->positive = !(a->positive ^ b->positive);
     return retval;
   }
-  
+
   // Cannot allocate memory for bigint
   retval = malloc(sizeof(bigint));
   if (!retval)
     return NULL;
-  
+
   int xlen = (a->digits + b->digits + 8) / 9;
   int* x = calloc(xlen, sizeof(int));
   if (!x) {
     free(retval);
     return NULL;
   }
-  
-  int* xa = a->x;
-  int* xb = b->x;
-  int alen = a->xlen;
-  int blen = b->xlen;
-  
+
   // Long multiplication
-  long carry;
   long product;
   for (int ib = 0; ib < blen; ib++) {
-    carry = 0L;
+    product = 0L;
     for (int ia = 0; ia < alen; ia++) {
-      product = (long)xa[ia] * (long)xb[ib] + (long)x[ia + ib] + carry;
+      product += (long)xa[ia] * (long)xb[ib] + (long)x[ia + ib];
       x[ia + ib] = (int)(product % BASE);
-      carry = product / BASE;
+      product /= BASE;
     }
-    x[ib + alen] += carry;
+    x[ib + alen] += product;
   }
-  
+
   // find xlen and digits
   int lastnonzeroindex = xlen - 1;
   while (x[lastnonzeroindex] == 0)
@@ -345,7 +343,7 @@ bigint* bi_mult(const bigint *a, const bigint *b) {
   int ndigits = 9 * lastnonzeroindex;
   for (int t = x[lastnonzeroindex]; t >= 1; t /= 10)
     ++ndigits;
-  
+
   retval->positive = !(a->positive ^ b->positive);
   retval->digits = ndigits;
   retval->xlen = lastnonzeroindex + 1;
@@ -360,27 +358,27 @@ bigint* bi_div(const bigint *a, const bigint *b) {
 bigint* bi_factorial(const bigint *a) {
   if (!a)
     return NULL;
-  
+
   bigint* one = bi_fromstring("1");
-  
+
   if (bi_is_zero(a))
     return one;
-  
+
   if (!a->positive) {
     bi_delete(one);
     return NULL;
   }
-  
+
   bigint* newretval;
   bigint* newprev;
   bigint* retval = bi_copy(one);
   bigint* prev = bi_copy(a);
-  
+
   if (!retval)
     return NULL;
 
   // TODO: is it better if we use mutable bigint here?
-  
+
   while (!bi_is_zero(prev)) {
     newretval = bi_mult(retval, prev);
     bi_delete(retval);
@@ -394,27 +392,28 @@ bigint* bi_factorial(const bigint *a) {
       return NULL;
     prev = newprev;
   }
-  
+
   bi_delete(prev);
-  
+
   return retval;
 }
 
 void bi_print(const bigint* a) {
-  int xlen = a->xlen;
-  int* x = a->x;
-  
   if (!a) {
     puts("NULL");
     return;
   }
+
   if (!(a->x)) {
     puts("0");
     return;
   }
-  
-  printf("xlen,digits: %4d, %4d, ", xlen, a->digits);
-  printf(a->positive ? " " : "-");
+
+  int xlen = a->xlen;
+  int* x = a->x;
+  char sign = a->positive ? ' ' : '-';
+
+  printf("xlen,digits: %4d, %4d, %c", xlen, a->digits, sign);
   printf("%d ", x[xlen-1]);
   for (int i = xlen - 2; i >= 0; --i)
     printf("%09d ", x[i]);
@@ -425,19 +424,19 @@ int bi_cmp(const bigint *a, const bigint *b) {
   // same bigint
   if (a == b)
     return 0;
-  
+
   // one of two operands is null
   if (a == NULL)
     return -1;
   if (b == NULL)
     return 1;
-  
+
   int adigits = a->digits;
   int bdigits = b->digits;
   bool apositive = a->positive;
   int* ax = a->x;
   int* bx = b->x;
-  
+
   // one of two operands is zero
   if (ax == NULL) {
     if (bx == NULL)
@@ -446,19 +445,19 @@ int bi_cmp(const bigint *a, const bigint *b) {
       return -1;
     return 1;
   }
-  
+
   // opposite sign
   if (apositive ^ b->positive)
     return (apositive) ? 1 : -1;
-  
+
   // same sign
-  
+
   // different number of digits
   if (adigits < bdigits)
     return apositive ? -1 : 1;
   if (adigits > bdigits)
     return apositive ? 1 : -1;
-  
+
   // same number of digits
   for (int i = a->xlen - 1; i >= 0; --i) {
     if (ax[i] < bx[i])
@@ -466,7 +465,7 @@ int bi_cmp(const bigint *a, const bigint *b) {
     else if (ax[i] > bx[i])
       return apositive ? 1 : -1;
   }
-  
+
   return 0;
 }
 
@@ -475,12 +474,15 @@ bool bi_equal(const bigint *a, const bigint *b) {
 }
 
 bigint* bi_copy(const bigint* a) {
+  if (!a)
+    return NULL;
+
   bigint* retval = malloc(sizeof(bigint));
   if (!retval)
     return NULL;
-  
+
   int xlen = a->xlen;
-  
+
   if (a->x == NULL) {
     retval->xlen = 0;
     retval->digits = 0;
@@ -488,19 +490,19 @@ bigint* bi_copy(const bigint* a) {
     retval->positive = true;
     return retval;
   }
-  
+
   int* x = malloc(xlen * sizeof(int));
   if (!x) {
     free(retval);
     return NULL;
   }
-  
+
   memcpy(x, a->x, xlen * sizeof(int));
   retval->xlen = xlen;
   retval->digits = a->digits;
   retval->positive = a->positive;
   retval->x = x;
-  
+
   return retval;
 }
 
@@ -532,23 +534,23 @@ bigint* bi_zero() {
 bigint* bi_negate(const bigint* a) {
   if (!a)
     return NULL;
-  
+
   bigint* retval = malloc(sizeof(bigint));
   if (!retval)
     return NULL;
-  
+
   if (bi_is_zero(a)) {
     retval->x = NULL;
     retval->positive = true;
     return retval;
   }
-  
+
   int *x = malloc(a->xlen * sizeof(int));
   if (!x) {
     free(retval);
     return NULL;
   }
-  
+
   memcpy(x, a->x, a->xlen * sizeof(int));
   retval->x = x;
   retval->xlen = a->xlen;
