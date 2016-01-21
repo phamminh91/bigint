@@ -102,7 +102,7 @@ bigint* bi_add(const bigint *a, const bigint *b) {
     retval->digits = b->digits;
     retval->xlen = b->xlen;
     retval->x = b->x;
-    retval->positive = !(retval->positive);
+    retval->positive = !(b->positive);
     bigint* res = bi_sub(a, retval);
     free(retval);
     return res;
@@ -192,7 +192,7 @@ bigint* bi_sub(const bigint *a, const bigint *b) {
     retval->digits = b->digits;
     retval->xlen = b->xlen;
     retval->x = b->x;
-    retval->positive = !(retval->positive);
+    retval->positive = !(b->positive);
     bigint* res = bi_add(a, retval);
     free(retval);
     return res;
@@ -283,7 +283,7 @@ bigint* bi_sub(const bigint *a, const bigint *b) {
   return retval;
 }
 
-bigint* bi_mult(const bigint *a, const bigint *b) {
+bigint* bi_mul(const bigint *a, const bigint *b) {
   // One operand is NULL
   if (!(a && b))
     return NULL;
@@ -380,7 +380,7 @@ bigint* bi_factorial(const bigint *a) {
   // TODO: is it better if we use mutable bigint here?
 
   while (!bi_is_zero(prev)) {
-    newretval = bi_mult(retval, prev);
+    newretval = bi_mul(retval, prev);
     bi_delete(retval);
     if (!retval)
       return NULL;

@@ -32,7 +32,7 @@ bigint* bi_negate(const bigint *);
 
 bigint* bi_add(const bigint *, const bigint *);
 bigint* bi_sub(const bigint *, const bigint *);
-bigint* bi_mult(const bigint *, const bigint *);
+bigint* bi_mul(const bigint *, const bigint *);
 bigint* bi_div(const bigint *, const bigint *);
 
 bigint* bi_factorial(const bigint *);
