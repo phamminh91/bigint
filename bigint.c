@@ -288,7 +288,6 @@ bigint* bi_mul(const bigint *a, const bigint *b) {
   if (!(a && b))
     return NULL;
 
-
   // One operand is bigint zero
   if (bi_is_zero(a) || bi_is_zero(b))
     return bi_zero();

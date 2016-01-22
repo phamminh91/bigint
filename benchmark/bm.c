@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <time.h>
-#include "bigint.h"
+#include "../bigint.h"
 
 #define NOPS 2000
 #define NRUNS 100
